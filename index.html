@@ -1,0 +1,99 @@
+<html>
+	<head>
+		<script type="text/javascript" src="main.js"></script>
+		<link href='http://fonts.googleapis.com/css?family=Oswald' rel='stylesheet' type='text/css'>
+		<link rel="stylesheet" type="text/css" href="main.css"/>
+		<title>ajxs / jpk</title>
+	</head>
+	<body onload="main_init()">
+		<div id="main">
+			<div id="header">
+				<a href="https://github.com/ajxs">ajxs</a> / <a href="https://github.com/ajxs/jpk">jpk</a>
+			</div>
+			<div class="section">
+				<div class="sectionTitle">JPEGKrusher</div>
+				Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
+			</div>
+			
+			<div id="imgContainer">
+				<canvas class="imgCanvas" id="srcCanvas"></canvas>
+				<canvas class="imgCanvas" id="mainCanvas"></canvas>
+			</div>
+			<div id="rekrushButton" onclick="recrush()">reKrush file</div>
+			<div id="imgcontrols" class="clearFix">
+				<div class="imgcontrol_group">
+					<div class="imgcontrol_item_heading">
+						Distortion
+					</div>
+					<div class="imgcontrol_item">
+						<label for="control_1">Control 1</label>
+						<input type="range" min="0" max="100" value="50" id="control_1" onchange="getControlValues()"/>
+						<span id="control_1_value"></span>
+					</div>
+					<div class="imgcontrol_item">
+						<label for="control_2">Control 2</label>
+						<input type="range" min="0" max="100" value="50" id="control_2" onchange="getControlValues()"/>
+						<span id="control_2_value"></span>
+					</div>
+					<div class="imgcontrol_item">
+						<label for="control_3">Control 2</label>
+						<input type="range" min="0" max="50" value="10" id="control_3" onchange="getControlValues()"/>
+						<span id="control_3_value"></span>
+					</div>
+				</div>
+				<div class="imgcontrol_group">
+					<div class="imgcontrol_item_heading">
+						Slicer
+					</div>
+					<div class="imgcontrol_item">
+						<label for="control_4">Control 4</label>
+						<input type="range" min="0" max="100" value="50" id="control_4" onchange="getControlValues()"/>
+						<span id="control_4_value"></span>
+					</div>
+					<div class="imgcontrol_item">
+						<label for="control_5">Control 5</label>
+						<input type="range" min="0" max="100" value="50" id="control_5" onchange="getControlValues()"/>
+						<span id="control_5_value"></span>
+					</div>
+					<div class="imgcontrol_item">
+						<label for="control_6">Control 6</label>
+						<input type="range" min="0" max="50" value="25" id="control_6" onchange="getControlValues()"/>
+						<span id="control_6_value"></span>
+					</div>
+				</div>
+				<div class="imgcontrol_group">
+					<div class="imgcontrol_item_heading">
+						Delay
+					</div>
+					<div class="imgcontrol_item">
+						<label for="control_7">Control 7</label>
+						<input type="range" min="0" max="50" value="15" id="control_7" onchange="getControlValues()"/>
+						<span id="control_7_value"></span>
+					</div>
+					<div class="imgcontrol_item">
+						<label for="control_8">Control 8</label>
+						<input type="range" min="0" max="50" value="25" id="control_8" onchange="getControlValues()"/>
+						<span id="control_8_value"></span>
+					</div>
+				</div>
+			</div>
+			<div id="controls" class="section">
+				<div id="controls_images" class="clearFix">
+					<div class="sectionTitle">Sample Images</div>
+					<img id="img_5" onclick="loadFileFromImg(this)" src="img/5.png"/>
+					<img id="img_6" onclick="loadFileFromImg(this)" src="img/6.png"/>
+					<img id="img_4" onclick="loadFileFromImg(this)" src="img/4.png"/>
+				</div>
+				<div id="controls_file">
+					<div class="sectionTitle">Upload File</div>
+					<input type="file" style="display: none;" id="fileInput" onchange="loadFile(this.files)"/>
+					<div id="browseButton" onclick="handleFileInput()">Upload File</div>
+					<div id="fileInfo"></div>
+				</div>
+				
+			</div>
+		</div>
+	</body>
+
+
+</html>
