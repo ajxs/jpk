@@ -109,12 +109,15 @@ var control6 = 25;
 var control7 = 15;
 var control8 = 25;
 
-var test;
+var segLength;
+var segSource, segTarget;
+var sourceData, targetData;
+var increment;
 
 function crush() {
 	var dataURL = srcCanvas.toDataURL("image/jpeg", 1.0);
-	var img_byteArray = convertDataURIToBinary(dataURL);
-	var img_byteArray2 = convertDataURIToBinary(dataURL);
+	var img_byteArray = base64toBinary(dataURL);
+	var img_byteArray2 = base64toBinary(dataURL);
 	
 	var img_headerLength = jpeg_getHeaderLength(img_byteArray);
 	var img_ptr = 0;
@@ -134,18 +137,16 @@ function crush() {
 
 	if(control6 > 0) {		// SLICER
 		for(var c = 0; c < (control6/25)|0; c++) {
-			var segLength = (Math.random()*50*control4)|0;
+			segLength = (Math.random()*50*control4)|0;
 			
-			var segSource = img_byteArray.length;
+			segSource = img_byteArray.length;
 			while(segSource + segLength > img_byteArray.length) segSource = (Math.random()*img_byteArray.length)|0;
 			
-
-			var segTarget = img_byteArray.length;
+			segTarget = img_byteArray.length;
 			while(segTarget + segLength > img_byteArray.length) segTarget = (Math.random()*img_byteArray.length)|0;
 			
-			
-			var sourceData = new Uint8Array(segLength);
-			var targetData = new Uint8Array(segLength);
+			sourceData = new Uint8Array(segLength);
+			targetData = new Uint8Array(segLength);
 
 			for(var i = 0; i < segLength; i++) {
 				sourceData[i] = img_byteArray[i + segSource];
@@ -158,48 +159,52 @@ function crush() {
 			}
 		}
 		
-		var increment = control2*(Math.random()*5);
-		var inc = 0;
+		increment = control2*(Math.random()*5);
 		
 		for(var c = 0; c < (control6/25)|0; c++) {
 			img_ptr = img_headerLength;
 			while(img_ptr < img_byteArray.length) {
 				img_ptr += increment;
 				img_byteArray[img_ptr] = '00';
-				inc++;
 			}
 		}
 	}	
-	
-	var img = getImgBase64(img_byteArray);
-	mainContext.drawImage(img,0,0);
 
-	var segLength = (Math.random()*100*control8)|0;		// SPECTRAL
-	
-	var segSource = img_byteArray2.length;
-	while(segSource + segLength > img_byteArray2.length) segSource = (Math.random()*img_byteArray2.length)|0;
-	
+	var newImage = binaryToBase64Img(img_byteArray);
+	newImage.onload = function() {		// fixes issues with Firefox
+		mainContext.drawImage(newImage, 0, 0);
 
-	var segTarget = img_byteArray2.length;
-	while(segTarget + segLength > img_byteArray2.length) segTarget = (Math.random()*img_byteArray2.length)|0;
-	
-	
-	var sourceData = new Uint8Array(segLength);
-	var targetData = new Uint8Array(segLength);
+		segLength = (Math.random()*100*control8)|0;		// DELAY
+		
+		segSource = img_byteArray2.length;
+		while(segSource + segLength > img_byteArray2.length) segSource = (Math.random()*img_byteArray2.length)|0;
+		
 
-	for(var i = 0; i < segLength; i++) {
-		sourceData[i] = img_byteArray2[i + segSource];
-		targetData[i] = img_byteArray2[i + segTarget];
-	}	
-	
-	for(var i = 0; i < segLength; i++) {
-		img_byteArray2[segSource + i] = targetData[segTarget + i];
-		img_byteArray2[segTarget + i] = sourceData[segSource + i];
-	}	
-	
-	mainContext.globalCompositeOperation = 'source-over';
-	mainContext.globalAlpha = (control7/200);
-	mainContext.drawImage(getImgBase64(img_byteArray2), 0, 0);
+		segTarget = img_byteArray2.length;
+		while(segTarget + segLength > img_byteArray2.length) segTarget = (Math.random()*img_byteArray2.length)|0;
+		
+		
+		sourceData = new Uint8Array(segLength);
+		targetData = new Uint8Array(segLength);
+
+		for(var i = 0; i < segLength; i++) {
+			sourceData[i] = img_byteArray2[i + segSource];
+			targetData[i] = img_byteArray2[i + segTarget];
+			
+			img_byteArray2[segSource + i] = targetData[segTarget + i];
+			img_byteArray2[segTarget + i] = sourceData[segSource + i];
+			
+		}
+
+		var newImage2 = binaryToBase64Img(img_byteArray2);
+		newImage2.onload = function() {
+			mainContext.globalCompositeOperation = 'source-over';
+			mainContext.globalAlpha = (control7/200);
+			mainContext.drawImage(newImage2, 0, 0);
+		};
+
+
+	};
 
 };
 
@@ -211,8 +216,7 @@ function jpeg_getHeaderLength(_byteArray) {
 	}
 };
 
-
-function getImgBase64(srcArray) {
+function binaryToBase64Img(srcArray) {
 	var ascii = Array.prototype.map.call(srcArray, function(x) {	//encode binary to ascii
 		return String.fromCharCode(x);
 	});
@@ -224,7 +228,7 @@ function getImgBase64(srcArray) {
 
 
 var BASE64_MARKER = ';base64,';
-function convertDataURIToBinary(dataURI) {
+function base64toBinary(dataURI) {
 	var base64Index = dataURI.indexOf(BASE64_MARKER) + BASE64_MARKER.length;
 
 	var raw = window.atob(dataURI.substring(base64Index));	// strips off the base64 encoding marker and converts the rest to binary
@@ -235,12 +239,12 @@ function convertDataURIToBinary(dataURI) {
 };
 
 
-function convertDataURIToBinaryFF(dataURI) { 
+function base64toBinaryFF(dataURI) { 
     var base64Index = dataURI.indexOf(BASE64_MARKER) + BASE64_MARKER.length; 
     var raw = window.atob(dataURI.substring(base64Index));    // strips off the base64 encoding marker and converts the rest to binary 
 
     return Uint8Array.from(Array.prototype.map.call(raw,function(x) { 
 			return x.charCodeAt(0); 
-		})); 
+		}));
 };
 

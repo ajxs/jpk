@@ -19,6 +19,14 @@
     transition: all 1s;
 }
 
+#imgContainer img {
+	max-width: 500px;
+	max-height: 500px;
+	margin-right: 10px;
+    -webkit-transition: all 1s;
+    transition: all 1s;
+}
+
 #header {
 	font-family: 'Oswald', sans-serif;
 	font-size: 64px;
