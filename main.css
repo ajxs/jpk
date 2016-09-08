@@ -57,7 +57,7 @@
 	background-color: rgb(230,230,230);
 	font-family: 'arial', sans-serif;
 	font-size: 14px;
-	letter-spacing: normal;	
+	letter-spacing: normal;
 	padding: 6px;
 }
 
@@ -117,11 +117,11 @@
 #imgcontrols {
 	margin-left: 20px;
 	width: 1000px;
+	display: flex;
 }
 
 .imgcontrol_group {
-	float: left;
-	margin-right: 40px;
+	margin-right: 20px;
 }
 
 .imgcontrol_item {
@@ -273,4 +273,3 @@ input[type=range]:focus::-ms-fill-lower {
 input[type=range]:focus::-ms-fill-upper {
 	background: #a3a3a3;
 }
-

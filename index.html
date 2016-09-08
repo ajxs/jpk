@@ -18,30 +18,30 @@
 					Controls 7-8 adjust whether or not a further corrupted version of the image is overlaid ontop of the resulting image. Controlling the opacity and resulting effect.<br/>
 					Feel free to report any suggestions, issues or forks to ajxscc [at] gmail.com
 			</div>
-			
+
 			<div id="imgContainer">
 				<canvas id="srcCanvas"></canvas>
 				<canvas id="mainCanvas"></canvas>
 			</div>
-			<div id="rekrushButton" onclick="recrush()">reKrush file</div>
+			<div id="rekrushButton" onclick="crush()">reKrush file</div>
 			<div id="imgcontrols" class="clearFix">
 				<div class="imgcontrol_group">
 					<div class="imgcontrol_item_heading">
 						Distortion
 					</div>
 					<div class="imgcontrol_item">
-						<label for="control_1">Control 1</label>
-						<input type="range" min="0" max="100" value="50" id="control_1" onchange="getControlValues()"/>
+						<label for="control_1">Min</label>
+						<input type="range" min="0" max="100" value="50" id="control_distort_interval_min" onchange="getControlValues()"/>
 						<span id="control_1_value"></span>
 					</div>
 					<div class="imgcontrol_item">
-						<label for="control_2">Control 2</label>
-						<input type="range" min="0" max="100" value="50" id="control_2" onchange="getControlValues()"/>
+						<label for="control_2">Max</label>
+						<input type="range" min="0" max="100" value="80" id="control_distort_interval_max" onchange="getControlValues()"/>
 						<span id="control_2_value"></span>
 					</div>
 					<div class="imgcontrol_item">
-						<label for="control_3">Control 3</label>
-						<input type="range" min="0" max="50" value="10" id="control_3" onchange="getControlValues()"/>
+						<label for="control_3">Threshold</label>
+						<input type="range" min="0" max="50" value="10" id="control_distort_threshold" onchange="getControlValues()"/>
 						<span id="control_3_value"></span>
 					</div>
 				</div>
@@ -50,18 +50,13 @@
 						Slicer
 					</div>
 					<div class="imgcontrol_item">
-						<label for="control_4">Control 4</label>
-						<input type="range" min="0" max="100" value="50" id="control_4" onchange="getControlValues()"/>
+						<label for="control_4">Seg length</label>
+						<input type="range" min="0" max="100" value="75" id="control_4" onchange="getControlValues()"/>
 						<span id="control_4_value"></span>
 					</div>
 					<div class="imgcontrol_item">
-						<label for="control_5">Control 5</label>
-						<input type="range" min="0" max="100" value="50" id="control_5" onchange="getControlValues()"/>
-						<span id="control_5_value"></span>
-					</div>
-					<div class="imgcontrol_item">
-						<label for="control_6">Control 6</label>
-						<input type="range" min="0" max="50" value="25" id="control_6" onchange="getControlValues()"/>
+						<label for="control_6">Iterations</label>
+						<input type="range" min="0" max="4" value="1" id="control_slicer_iterations" onchange="getControlValues()"/>
 						<span id="control_6_value"></span>
 					</div>
 				</div>
@@ -80,6 +75,26 @@
 						<span id="control_8_value"></span>
 					</div>
 				</div>
+				<div class="imgcontrol_group">
+					<div class="imgcontrol_item_heading">
+						Bitcrusher
+					</div>
+					<div class="imgcontrol_item">
+						<label for="control_6">Enabled</label>
+						<input type="checkbox" checked id="control_bitcrush" onchange="getControlValues()"/>
+						<span id="control_6_value"></span>
+					</div>
+					<div class="imgcontrol_item">
+						<label for="control_8">Threshold</label>
+						<input type="range" min="0" max="10" value="5" id="control_bitcrush_threshold" onchange="getControlValues()"/>
+						<span id="control_bitcrush_threshold_value"></span>
+					</div>
+					<div class="imgcontrol_item">
+						<label for="control_8">Interval</label>
+						<input type="range" min="0" max="100" value="50" id="control_bitcrush_interval" onchange="getControlValues()"/>
+						<span id="control_bitcrush_interval_value"></span>
+					</div>
+				</div>
 			</div>
 			<div id="controls" class="section">
 				<div id="controls_images" class="clearFix">
@@ -90,11 +105,11 @@
 				</div>
 				<div id="controls_file">
 					<div class="sectionTitle">Upload File</div>
-					<input type="file" style="display: none;" id="fileInput" onchange="loadFile(this.files)"/>
+					<input type="file" style="display: none;" id="fileInput" onchange="loadFile(this.files[0])"/>
 					<div id="browseButton" onclick="handleFileInput()">Upload File</div>
 					<div id="fileInfo"></div>
 				</div>
-				
+
 			</div>
 		</div>
 	</body>
