@@ -113,12 +113,6 @@ function getControlValues() {
 };
 
 
-function getRandomInt(multiplier) {
-	return (Math.random()*multiplier)|0;
-};
-
-
-
 function updateControlLabel(node) {
 	document.getElementById(node.id + '_value').innerHTML = node.value;
 };
@@ -134,14 +128,14 @@ function crush() {
 
 	var distort = function(_byteArray, _headerLength) {
 		var img_ptr = _headerLength || 0;
-		while(img_ptr  < _byteArray.length) {
+		while(img_ptr < _byteArray.length) {
 			debug.distort.nSegments++;
 
 			if(Math.random() < (control.distort.threshold/10)) {
-				_byteArray[img_ptr] = getRandomInt(255);
+				_byteArray[img_ptr] = (Math.random() * 255)|0;
 				debug.distort.nDistortions++;
 			}
-			img_ptr += (control.distort.intervalMin+getRandomInt(control.distort.intervalMax/2));
+			img_ptr += control.distort.intervalMin+(Math.random()*control.distort.intervalMax)|0;
 		}
 		return _byteArray;
 	};
@@ -153,11 +147,11 @@ function crush() {
 			segLength = (Math.random()*50*_segLengthModifier)|0;
 
 			segSource = _byteArray.length;
-			while(segSource + segLength > _byteArray.length) segSource = getRandomInt(_byteArray.length);		// get random position without going out of bounds
+			while(segSource + segLength > _byteArray.length) segSource = (Math.random()*_byteArray.length)|0;		// get random position without going out of bounds
 			debug.slicer.segSource = segSource;
 
 			segTarget = _byteArray.length;
-			while(segTarget + segLength > _byteArray.length) segTarget = getRandomInt(_byteArray.length);
+			while(segTarget + segLength > _byteArray.length) segTarget = (Math.random()*_byteArray.length)|0;
 			debug.slicer.segTarget = segTarget;
 
 			sourceData = _byteArray.subarray(segSource, segSource+segLength);
@@ -176,7 +170,7 @@ function crush() {
 	var bitcrush = function(_byteArray, _headerLength) {
 		var img_ptr = _headerLength || 0;
 		while(img_ptr < _byteArray.length) {
-			img_ptr += control.bitcrush.interval*getRandomInt(20);
+			img_ptr += control.bitcrush.interval*(Math.random()*20)|0;
 			debug.bitcrush.nSegments++;
 			if(Math.random() < (control.bitcrush.threshold/100)) {
 				_byteArray[img_ptr] = '0A';
