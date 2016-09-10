@@ -6,7 +6,6 @@ var srcContext, mainContext;
 
 var urlCreator = window.URL || window.webkitURL;
 
-
 var debug = {
 	jpeg_headerLength: 0,
 	distort: {
@@ -27,17 +26,26 @@ var debug = {
 	}
 };
 
-var controlValues = {
-	distort_interval_min: 50,
-	distort_interval_max: 80,
-	distort_threshold: 1,
-	slicer_seg_length: 75,
-	slicer_iterations: 25,
-	control7: 15,
-	control8: 25,
-	bitcrush: true,
-	bitcrush_threshold: 5,
-	bitcrush_interval: 50
+var control = {
+	jpeg_headerLength: 0,
+	distort: {
+		intervalMin: 50,
+		intervalMax: 80,
+		threshold: 1
+	},
+	slicer: {
+		segLength: 75,
+		iterations: 25
+	},
+	bitcrush: {
+		enabled: true,
+		threshold: 5,
+		interval: 50
+	},
+	delay: {
+		alpha: 15,
+		segLength: 25
+	}
 };
 
 function main_init() {
@@ -78,7 +86,6 @@ function loadFile(file) {
 };
 
 function loadFileFromImg(img) {
-
 	img_width = img.naturalWidth;
 	img_height = img.naturalHeight;
 
@@ -93,124 +100,112 @@ function loadFileFromImg(img) {
 
 
 function getControlValues() {
-	controlValues.distort_interval_min = document.getElementById('control_distort_interval_min').value;
-	controlValues.distort_interval_max = document.getElementById('control_distort_interval_max').value;
-	controlValues.distort_threshold = document.getElementById('control_distort_threshold').value;
-	controlValues.slicer_seg_length = document.getElementById('control_4').value;
-	controlValues.slicer_iterations = document.getElementById('control_slicer_iterations').value;
-	controlValues.control7 = document.getElementById('control_7').value;
-	controlValues.control8 = document.getElementById('control_8').value;
-	controlValues.bitcrush = document.getElementById('control_bitcrush').checked;
-	controlValues.bitcrush_threshold = document.getElementById('control_bitcrush_threshold').value;
-	controlValues.bitcrush_interval = document.getElementById('control_bitcrush_interval').value;
+	control.distort.intervalMin = document.getElementById('control_distort_interval_min').value;
+	control.distort.intervalMax = document.getElementById('control_distort_interval_max').value;
+	control.distort.threshold = document.getElementById('control_distort_threshold').value;
+	control.slicer.segLength = document.getElementById('control_4').value;
+	control.slicer.iterations = document.getElementById('control_slicer_iterations').value;
+	control.delay.alpha = document.getElementById('control_7').value;
+	control.delay.segLength = document.getElementById('control_8').value;
+	control.bitcrush.enabled = document.getElementById('control_bitcrush').checked;
+	control.bitcrush.threshold = document.getElementById('control_bitcrush_threshold').value;
+	control.bitcrush.interval = document.getElementById('control_bitcrush_interval').value;
 };
+
+
+function getRandomInt(multiplier) {
+	return (Math.random()*multiplier)|0;
+};
+
 
 
 function updateControlLabel(node) {
 	document.getElementById(node.id + '_value').innerHTML = node.value;
 };
 
-
-
-var segSource, segTarget, segLength;
-var sourceData, targetData;
-
 function crush() {
 	getControlValues();
-	var dataURL = srcCanvas.toDataURL("image/jpeg", 1.0),
-		img_byteArray = base64toBinary(dataURL);
-
-	var img_headerLength = jpeg_getHeaderLength(img_byteArray),
-		img_ptr = img_headerLength;
+	var img_byteArray = base64toBinary(srcCanvas.toDataURL("image/jpeg", 1.0));
+	var img_headerLength = jpeg_getHeaderLength(img_byteArray);
 
 	mainContext.globalCompositeOperation = 'source-over';
 	mainContext.globalAlpha = 1;
 
 
-	var distort = function() {
-		while(img_ptr < img_byteArray.length) {
-			img_ptr += controlValues.distort_interval_min+(Math.random()*(controlValues.distort_interval_max))|0;
+	var distort = function(_byteArray, _headerLength) {
+		var img_ptr = _headerLength || 0;
+		while(img_ptr  < _byteArray.length) {
 			debug.distort.nSegments++;
 
-			if(Math.random() < (controlValues.distort_threshold/10)) {
-				img_byteArray[img_ptr] = (Math.random() * 255)|0;
+			if(Math.random() < (control.distort.threshold/10)) {
+				_byteArray[img_ptr] = getRandomInt(255);
 				debug.distort.nDistortions++;
 			}
+			img_ptr += (control.distort.intervalMin+getRandomInt(control.distort.intervalMax/2));
 		}
+		return _byteArray;
 	};
 
-	var slicer = function() {
-		for(var c = 0; c < (controlValues.slicer_iterations)|0; c++) {
-			segLength = (Math.random()*50*controlValues.slicer_seg_length)|0;
+	var slicer = function(_byteArray, _iterations, _segLengthModifier) {
+		var segSource, segTarget, segLength;
+		var sourceData, targetData;
+		for(var c = 0; c < _iterations|0; c++) {
+			segLength = (Math.random()*50*_segLengthModifier)|0;
 
-			segSource = img_byteArray.length;
-			while(segSource + segLength > img_byteArray.length) segSource = (Math.random()*img_byteArray.length)|0;		// get random position without going out of bounds
+			segSource = _byteArray.length;
+			while(segSource + segLength > _byteArray.length) segSource = getRandomInt(_byteArray.length);		// get random position without going out of bounds
 			debug.slicer.segSource = segSource;
 
-			segTarget = img_byteArray.length;
-			while(segTarget + segLength > img_byteArray.length) segTarget = (Math.random()*img_byteArray.length)|0;
+			segTarget = _byteArray.length;
+			while(segTarget + segLength > _byteArray.length) segTarget = getRandomInt(_byteArray.length);
 			debug.slicer.segTarget = segTarget;
 
-			sourceData = img_byteArray.subarray(segSource, segSource+segLength);
-			targetData = img_byteArray.subarray(segTarget, segTarget+segLength);
+			sourceData = _byteArray.subarray(segSource, segSource+segLength);
+			targetData = _byteArray.subarray(segTarget, segTarget+segLength);
 
 			for(var i = 0; i < segLength; i++) {
-				img_byteArray[segSource + i] = targetData[segTarget + i];
-				img_byteArray[segTarget + i] = sourceData[segSource + i];
+				_byteArray[segSource + i] = targetData[segTarget + i];
+				_byteArray[segTarget + i] = sourceData[segSource + i];
 			}
 		}
+
+		return _byteArray;
 	};
 
 
-	var bitcrush = function() {
-		img_ptr = img_headerLength;
-		while(img_ptr < img_byteArray.length) {
-			img_ptr += (controlValues.bitcrush_interval*(Math.random()*20))|0;
+	var bitcrush = function(_byteArray, _headerLength) {
+		var img_ptr = _headerLength || 0;
+		while(img_ptr < _byteArray.length) {
+			img_ptr += control.bitcrush.interval*getRandomInt(20);
 			debug.bitcrush.nSegments++;
-			if(Math.random() < (controlValues.bitcrush_threshold/100)) {
-				img_byteArray[img_ptr] = '0A';
+			if(Math.random() < (control.bitcrush.threshold/100)) {
+				_byteArray[img_ptr] = '0A';
 				debug.bitcrush.nDistortions++;
 			}
 		}
+		return _byteArray;
 	};
 
-	var delay = function() {
-		var img_byteArray_delay = base64toBinary(dataURL);
-		segLength = (Math.random()*100*controlValues.control8)|0;
+	var delay = function(_byteArray) {
+		_byteArray = slicer(_byteArray, 1, control.delay.segLength);
 
-		segSource = img_byteArray_delay.length;
-		while(segSource + segLength > img_byteArray_delay.length) segSource = (Math.random()*img_byteArray_delay.length)|0;
-		debug.delay.segSource = segSource;
-
-		segTarget = img_byteArray_delay.length;
-		while(segTarget + segLength > img_byteArray_delay.length) segTarget = (Math.random()*img_byteArray_delay.length)|0;
-		debug.delay.segTarget = segSource;
-
-		sourceData = img_byteArray_delay.subarray(segSource, segSource+segLength);
-		targetData = img_byteArray_delay.subarray(segTarget, segTarget+segLength);
-
-		for(var i = 0; i < segLength; i++) {
-			img_byteArray_delay[segSource + i] = targetData[segTarget + i];
-			img_byteArray_delay[segTarget + i] = sourceData[segSource + i];
-		}
-
-		var imageResult_delay = binaryToBase64Img(img_byteArray_delay);
+		var imageResult_delay = binaryToBase64Img(_byteArray);
 		imageResult_delay.onload = function() {
 			mainContext.globalCompositeOperation = 'source-over';
-			mainContext.globalAlpha = (controlValues.control7/200);
+			mainContext.globalAlpha = (control.delay.alpha/200);
 			mainContext.drawImage(imageResult_delay, 0, 0);
 		};
 	};
 
 
-	distort();
-	if(controlValues.slicer_iterations > 0) slicer();
-	if(controlValues.bitcrush) bitcrush();
+	img_byteArray = distort(img_byteArray, img_headerLength);
+	if(control.slicer.iterations > 0) img_byteArray = slicer(img_byteArray, control.slicer.iterations, control.slicer.segLength);
+	if(control.bitcrush.enabled) img_byteArray = bitcrush(img_byteArray, img_headerLength);
 
 	var imageResult = binaryToBase64Img(img_byteArray);
 	imageResult.onload = function() {
 		mainContext.drawImage(imageResult, 0, 0);
-		delay();
+		delay(img_byteArray);
 	}
 
 };
