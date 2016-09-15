@@ -234,5 +234,4 @@ function base64toBinary(dataURI) {
 	return Uint8ClampedArray.from(Array.prototype.map.call(stripBase64String(dataURI), function(x) {
 		return x.charCodeAt(0);
 	}));
-
 };
