@@ -81,6 +81,7 @@ function loadFile(file) {
 		crush();
 	};
 
+	img.setAttribute('crossOrigin', 'anonymous');
 	img.src = urlCreator.createObjectURL(file);
 
 };

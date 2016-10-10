@@ -1,0 +1,151 @@
+#main {
+	width: 85%;
+	margin: 0 auto;
+}
+
+#main-canvas-container {
+	display: flex;
+	flex-flow: row wrap;
+	margin-top: 20px;
+	margin-bottom: 20px;
+}
+
+#main-canvas-container canvas {
+	flex: 0 1 auto;
+	margin-right: 10px;
+	margin-top: 10px;
+	max-width: 600px;
+	max-height: 400px;
+}
+
+#about-text {
+	max-width: 80%;
+}
+
+
+#main-header {
+	font-family: 'Oswald', sans-serif;
+	font-size: 64px;
+	letter-spacing: -4px;
+}
+
+
+#main-header a {
+	color: #000000;
+	text-decoration: none;
+	-webkit-transition: all 0.25s;
+	transition: all 0.25s;
+}
+
+#main-header a:hover {
+	color: rgb(100,100,100);
+}
+
+
+.section-title {
+	font-family: 'Oswald', sans-serif;
+	font-size: 24px;
+}
+
+.section {
+	margin-top: 20px;
+	background-color: rgb(230,230,230);
+	font-family: 'arial', sans-serif;
+	font-size: 14px;
+	letter-spacing: normal;
+	padding: 6px;
+}
+
+.section a {
+	color: rgb(20,20,20);
+}
+
+.section a:hover {
+	color: rgb(60,60,60);
+}
+
+
+
+#sample-images {
+	display: flex;
+	flex-flow: row wrap;
+	margin-top: 10px;
+	margin-bottom: 10px;
+}
+
+#sample-images img {
+	border: solid 3px #000000;
+	max-width: 160px;
+	max-height: 140px;
+	margin-right: 6px;
+	margin-top: 6px;
+	cursor: pointer;
+}
+
+#controls_file {
+	margin-top: 20px;
+	margin-bottom: 10px;
+}
+
+#main-controls {
+	display: flex;
+	flex-flow: row wrap;
+	margin-top: 20px;
+	margin-bottom: 20px;
+}
+
+#main-controls .button {
+	margin-right: 10px;
+	font-family: 'Oswald', sans-serif;
+	font-size: 28px;
+	color: rgb(230,230,230);
+	width: 150px;
+	padding: 4px;
+	text-align: center;
+	background-color: rgb(60,60,60);
+	cursor: pointer;
+	-webkit-transition: all 0.25s;
+	transition: all 0.25s;
+}
+
+#main-controls .button:hover {
+	background-color: rgb(120,120,120);
+}
+
+
+#main-input-controls {
+	display: flex;
+	flex-flow: row wrap;
+}
+
+.main-input-controls-group {
+	margin-right: 20px;
+}
+
+.main-input-controls-group .group-heading {
+	font-family: 'Oswald', sans-serif;
+	font-size: 18px;
+}
+
+.main-input-controls-group-item {
+}
+
+
+.main-input-controls-group-item label {
+	font-family: 'Oswald', sans-serif;
+	font-size: 12px;
+	width: 50px;
+	display: inline-block;
+}
+
+.main-input-controls-group-item span {
+	font-family: 'Oswald', sans-serif;
+	font-size: 12px;
+}
+
+
+#fileInfo {
+	margin: 14px;
+	font-family: 'Oswald', sans-serif;
+	font-size: 14px;
+}
