@@ -1,3 +1,7 @@
+body {
+	background-color: rgb(250,250,250);
+}
+
 #main {
 	width: 85%;
 	margin: 0 auto;
@@ -82,11 +86,6 @@
 	cursor: pointer;
 }
 
-#controls_file {
-	margin-top: 20px;
-	margin-bottom: 10px;
-}
-
 #main-controls {
 	display: flex;
 	flex-flow: row wrap;
@@ -96,6 +95,7 @@
 
 #main-controls .button {
 	margin-right: 10px;
+	margin-bottom: 10px;
 	font-family: 'Oswald', sans-serif;
 	font-size: 28px;
 	color: rgb(230,230,230);
@@ -120,16 +120,13 @@
 
 .main-input-controls-group {
 	margin-right: 20px;
+	margin-bottom: 20px;
 }
 
 .main-input-controls-group .group-heading {
 	font-family: 'Oswald', sans-serif;
 	font-size: 18px;
 }
-
-.main-input-controls-group-item {
-}
-
 
 .main-input-controls-group-item label {
 	font-family: 'Oswald', sans-serif;
@@ -148,4 +145,20 @@
 	margin: 14px;
 	font-family: 'Oswald', sans-serif;
 	font-size: 14px;
+}
+
+
+@media only screen and (min-device-width : 320px) and (max-device-width : 480px) {
+	#main {
+		width: inherit;
+		margin: inherit;
+	}
+
+	#sample-images img {
+		max-width: 96px;
+		max-height: 64px;
+		margin-right: 4px;
+		margin-top: 4px;
+	}
+
 }
