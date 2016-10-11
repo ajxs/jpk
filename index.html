@@ -1,100 +1,115 @@
 <html>
 	<head>
-		<script type="text/javascript" src="main.js"></script>
+		<script type="text/javascript" src="inc/main.js"></script>
 		<link href='http://fonts.googleapis.com/css?family=Oswald' rel='stylesheet' type='text/css'>
-		<link rel="stylesheet" type="text/css" href="main.css"/>
-		<title>ajxs / jpk</title>
+		<link rel="stylesheet" type="text/css" href="inc/main.css"/>
+		<link rel="stylesheet" type="text/css" href="inc/controls.css"/>
+		<title>ajxs / jpk(v2)</title>
 	</head>
 	<body onload="main_init()">
 		<div id="main">
-			<div id="header">
-				<a href="https://github.com/ajxs">ajxs</a> / <a href="https://github.com/ajxs/jpk">jpk</a>
+			<div id="main-header">
+				<a href="https://github.com/ajxs">ajxs</a> / <a href="https://github.com/ajxs/jpk">jpk(v2)</a>
 			</div>
 			<div class="section">
-				<div class="sectionTitle">JPEGKrusher</div>
-					JPEGKrusher is part of my various experiments in procedural image generation and computer-art. A simple app to create glitch-art by introducing arbitrary corruption in the JPEG compression within images. It functions by altering the bits within the binary data of a JPEG encoded file along arbitrary parameters. The controls available will have various effects upon the resulting image.<br/>
-					Controls 1-3 adjust the amount of binary distortion applied to the image, control1 and 2 adjust the min/max interval the file pointer moves between bits to corrupt. Control3 is the threshold for the percentage chance for the bit at the file pointer position being corrupted.<br/>
-					Controls 4-6 are a slicing mechanism, which will shift certain rows of the image across the image itself. Creating a 'jumbled','sliced' effect, where the image appears to be displayed out of order.<br/>
-					Controls 7-8 adjust whether or not a further corrupted version of the image is overlaid ontop of the resulting image. Controlling the opacity and resulting effect.<br/>
-					Feel free to report any suggestions, issues or forks to ajxscc [at] gmail.com
+				<div class="section-title">JPEGKrusher(v2)</div>
+					<div id="about-text">
+						JPEGKrusher is part of my various experiments in procedural image generation and computer-art. A simple app to create glitch-art by introducing arbitrary corruption in the JPEG compression within images. It functions by altering the bits within the binary data of a JPEG encoded file along arbitrary parameters. The controls available will have various effects upon the resulting image.<br/>
+						Controls 1-3 adjust the amount of binary distortion applied to the image, control1 and 2 adjust the min/max interval the file pointer moves between bits to corrupt. Control3 is the threshold for the percentage chance for the bit at the file pointer position being corrupted.<br/>
+						Controls 4-6 are a slicing mechanism, which will shift certain rows of the image across the image itself. Creating a 'jumbled','sliced' effect, where the image appears to be displayed out of order.<br/>
+						Controls 7-8 adjust whether or not a further corrupted version of the image is overlaid ontop of the resulting image. Controlling the opacity and resulting effect.<br/>
+						Feel free to report any suggestions, issues or forks to ajxscc [at] gmail.com
+					</div>
 			</div>
-			
-			<div id="imgContainer">
+
+			<div id="main-canvas-container">
 				<canvas id="srcCanvas"></canvas>
 				<canvas id="mainCanvas"></canvas>
 			</div>
-			<div id="rekrushButton" onclick="recrush()">reKrush file</div>
-			<div id="imgcontrols" class="clearFix">
-				<div class="imgcontrol_group">
-					<div class="imgcontrol_item_heading">
+			<div id="main-controls">
+				<div class="button" onclick="crush()">reKrush file</div>
+				<input type="file" style="display: none;" id="fileInput" onchange="loadFile(this.files[0])"/>
+				<div class="button" onclick="handleFileInput()">Upload file</div>
+			</div>
+
+			<div id="main-input-controls">
+				<div class="main-input-controls-group">
+					<div class="group-heading">
 						Distortion
 					</div>
-					<div class="imgcontrol_item">
-						<label for="control_1">Control 1</label>
-						<input type="range" min="0" max="100" value="50" id="control_1" onchange="getControlValues()"/>
-						<span id="control_1_value"></span>
+					<div class="main-input-controls-group-item">
+						<label for="control_distort_interval_min">Min</label>
+						<input type="range" min="0" max="100" value="50" id="control_distort_interval_min" onchange="updateControlLabel(this)"/>
+						<span id="control_distort_interval_min_value">50</span>
 					</div>
-					<div class="imgcontrol_item">
-						<label for="control_2">Control 2</label>
-						<input type="range" min="0" max="100" value="50" id="control_2" onchange="getControlValues()"/>
-						<span id="control_2_value"></span>
+					<div class="main-input-controls-group-item">
+						<label for="control_distort_interval_max">Max</label>
+						<input type="range" min="0" max="100" value="80" id="control_distort_interval_max" onchange="updateControlLabel(this)"/>
+						<span id="control_distort_interval_max_value">80</span>
 					</div>
-					<div class="imgcontrol_item">
-						<label for="control_3">Control 3</label>
-						<input type="range" min="0" max="50" value="10" id="control_3" onchange="getControlValues()"/>
-						<span id="control_3_value"></span>
+					<div class="main-input-controls-group-item">
+						<label for="control_distort_threshold">Threshold</label>
+						<input type="range" min="0" max="5" value="1" id="control_distort_threshold" onchange="updateControlLabel(this)"/>
+						<span id="control_distort_threshold_value">1</span>
 					</div>
 				</div>
-				<div class="imgcontrol_group">
-					<div class="imgcontrol_item_heading">
+				<div class="main-input-controls-group">
+					<div class="group-heading">
 						Slicer
 					</div>
-					<div class="imgcontrol_item">
-						<label for="control_4">Control 4</label>
-						<input type="range" min="0" max="100" value="50" id="control_4" onchange="getControlValues()"/>
-						<span id="control_4_value"></span>
+					<div class="main-input-controls-group-item">
+						<label for="control_4">Seg length</label>
+						<input type="range" min="0" max="100" value="75" id="control_4" onchange="updateControlLabel(this)"/>
+						<span id="control_4_value">75</span>
 					</div>
-					<div class="imgcontrol_item">
-						<label for="control_5">Control 5</label>
-						<input type="range" min="0" max="100" value="50" id="control_5" onchange="getControlValues()"/>
-						<span id="control_5_value"></span>
-					</div>
-					<div class="imgcontrol_item">
-						<label for="control_6">Control 6</label>
-						<input type="range" min="0" max="50" value="25" id="control_6" onchange="getControlValues()"/>
-						<span id="control_6_value"></span>
+					<div class="main-input-controls-group-item">
+						<label for="control_slicer_iterations">Iterations</label>
+						<input type="range" min="0" max="4" value="1" id="control_slicer_iterations" onchange="updateControlLabel(this)"/>
+						<span id="control_slicer_iterations_value">1</span>
 					</div>
 				</div>
-				<div class="imgcontrol_group">
-					<div class="imgcontrol_item_heading">
+				<div class="main-input-controls-group">
+					<div class="group-heading">
 						Delay
 					</div>
-					<div class="imgcontrol_item">
+					<div class="main-input-controls-group-item">
 						<label for="control_7">Control 7</label>
-						<input type="range" min="0" max="50" value="15" id="control_7" onchange="getControlValues()"/>
-						<span id="control_7_value"></span>
+						<input type="range" min="0" max="50" value="15" id="control_7" onchange="updateControlLabel(this)"/>
+						<span id="control_7_value">15</span>
 					</div>
-					<div class="imgcontrol_item">
+					<div class="main-input-controls-group-item">
 						<label for="control_8">Control 8</label>
-						<input type="range" min="0" max="50" value="25" id="control_8" onchange="getControlValues()"/>
-						<span id="control_8_value"></span>
+						<input type="range" min="0" max="50" value="25" id="control_8" onchange="updateControlLabel(this)"/>
+						<span id="control_8_value">25</span>
+					</div>
+				</div>
+				<div class="main-input-controls-group">
+					<div class="group-heading">
+						Bitcrusher
+					</div>
+					<div class="main-input-controls-group-item">
+						<label for="control_6">Enabled</label>
+						<input type="checkbox" checked id="control_bitcrush"/>
+					</div>
+					<div class="main-input-controls-group-item">
+						<label for="control_bitcrush_threshold">Threshold</label>
+						<input type="range" min="0" max="10" value="5" id="control_bitcrush_threshold" onchange="updateControlLabel(this)"/>
+						<span id="control_bitcrush_threshold_value">5</span>
+					</div>
+					<div class="main-input-controls-group-item">
+						<label for="control_bitcrush_interval">Interval</label>
+						<input type="range" min="0" max="100" value="50" id="control_bitcrush_interval" onchange="updateControlLabel(this)"/>
+						<span id="control_bitcrush_interval_value">50</span>
 					</div>
 				</div>
 			</div>
-			<div id="controls" class="section">
-				<div id="controls_images" class="clearFix">
-					<div class="sectionTitle">Sample Images</div>
+			<div class="section">
+				<div class="section-title">Sample Images</div>
+				<div id="sample-images">
 					<img id="img_5" onclick="loadFileFromImg(this)" src="img/5.png"/>
 					<img id="img_6" onclick="loadFileFromImg(this)" src="img/6.png"/>
 					<img id="img_4" onclick="loadFileFromImg(this)" src="img/4.png"/>
 				</div>
-				<div id="controls_file">
-					<div class="sectionTitle">Upload File</div>
-					<input type="file" style="display: none;" id="fileInput" onchange="loadFile(this.files)"/>
-					<div id="browseButton" onclick="handleFileInput()">Upload File</div>
-					<div id="fileInfo"></div>
-				</div>
-				
 			</div>
 		</div>
 	</body>
