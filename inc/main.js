@@ -205,8 +205,6 @@ function crush() {
 		delay(img_byteArray);
 
 		resultImage.src = mainCanvas.toDataURL('image/png',1);
-		resultImage.style.width = srcCanvas.offsetWidth;
-		resultImage.style.height = srcCanvas.offsetHeight;
 	}
 
 };

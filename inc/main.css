@@ -15,10 +15,10 @@ body {
 }
 
 #main-canvas-container canvas, img {
-	flex: 0 1 auto;
+	flex: 1 1 auto;
 	margin-right: 10px;
 	margin-top: 10px;
-	max-width: 40%;
+	max-width: 45%;
 	max-height: 400px;
 }
 
@@ -165,7 +165,7 @@ body {
 		margin-top: 4px;
 	}
 
-	#main-canvas-container canvas {
+	#main-canvas-container canvas, img {
 		max-width: 100%;
 		max-height: 320px;
 	}
