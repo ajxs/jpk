@@ -3,6 +3,7 @@ var img_width, img_height;
 
 var srcCanvas, mainCanvas;
 var srcContext, mainContext;
+var resultImage;
 
 var urlCreator = window.URL || window.webkitURL;
 
@@ -50,7 +51,8 @@ var control = {
 
 function main_init() {
 	srcCanvas = document.getElementById('srcCanvas');
-	mainCanvas = document.getElementById('mainCanvas');
+	mainCanvas = document.createElement('canvas');
+	resultImage = document.getElementById('resultImage');
 
 	srcContext = srcCanvas.getContext('2d');
 	mainContext = mainCanvas.getContext('2d');
@@ -174,7 +176,7 @@ function crush() {
 			img_ptr += control.bitcrush.interval*(Math.random()*20)|0;
 			debug.bitcrush.nSegments++;
 			if(Math.random() < (control.bitcrush.threshold/100)) {
-				_byteArray[img_ptr] = '0A';
+				_byteArray[img_ptr] = ((Math.random()*255)|0).toString(16);
 				debug.bitcrush.nDistortions++;
 			}
 		}
@@ -201,6 +203,10 @@ function crush() {
 	imageResult.onload = function() {
 		mainContext.drawImage(imageResult, 0, 0);
 		delay(img_byteArray);
+
+		resultImage.src = mainCanvas.toDataURL('image/png',1);
+		resultImage.style.width = srcCanvas.offsetWidth;
+		resultImage.style.height = srcCanvas.offsetHeight;
 	}
 
 };
