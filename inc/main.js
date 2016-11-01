@@ -108,8 +108,8 @@ function getControlValues() {
 	control.distort.threshold = document.getElementById('control_distort_threshold').value;
 	control.slicer.segLength = document.getElementById('control_4').value;
 	control.slicer.iterations = document.getElementById('control_slicer_iterations').value;
-	control.delay.alpha = document.getElementById('control_7').value;
-	control.delay.segLength = document.getElementById('control_8').value;
+	control.delay.alpha = document.getElementById('control_delay_alpha').value;
+	control.delay.segLength = document.getElementById('control_delay_segLength').value;
 	control.bitcrush.enabled = document.getElementById('control_bitcrush').checked;
 	control.bitcrush.threshold = document.getElementById('control_bitcrush_threshold').value;
 	control.bitcrush.interval = document.getElementById('control_bitcrush_interval').value;
