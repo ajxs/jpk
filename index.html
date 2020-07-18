@@ -4,32 +4,43 @@
 		<script type="text/javascript" src="inc/main.js"></script>
 		<link href='http://fonts.googleapis.com/css?family=Oswald' rel='stylesheet' type='text/css'>
 		<link rel="stylesheet" type="text/css" href="inc/main.css"/>
-		<link rel="stylesheet" type="text/css" href="inc/controls.css"/>
 		<title>ajxs / jpk(v2)</title>
 	</head>
 	<body onload="main_init()">
 		<div id="main">
-			<div id="main-header">
+			<header>
 				<a href="https://github.com/ajxs">ajxs</a> / <a href="https://github.com/ajxs/jpk">jpk(v2)</a>
-			</div>
+			</header>
 			<div class="section">
 				<div class="section-title">JPEGKrusher(v2)</div>
 					<div id="about-text">
 						<b>For the older v1 release <a href="v1/index.html">click here</a></b><br/>
-						JPEGKrusher is part of my various experiments in procedural image generation and computer-art. A simple app to create glitch-art by introducing arbitrary corruption in the JPEG compression within images.
-						It functions by altering the binary data of a JPEG encoded file along arbitrary parameters. The controls available have various effects on the corruption within the resulting image.<br/>
-						Of course feel free to fork this project or propose any changes you would like to see.<br/>Feel free to report any suggestions, issues, or feature requests, to ajxscc [at] gmail.com
+						JPEGKrusher is part of my various experiments in procedural image generation 
+						and computer-art. A simple app to create glitch-art by introducing arbitrary 
+						corruption in the JPEG compression within images.
+						It functions by altering the binary data of a JPEG encoded file along arbitrary 
+						parameters. The controls available have various effects on the corruption 
+						within the resulting image.<br/>
+						Of course feel free to fork this project or propose any changes you would 
+						like to see.<br/>
+						Feel free to report any suggestions, issues, or feature requests, to 
+						ajxs [at] panoptic.online
 					</div>
 			</div>
 
-			<div id="main-canvas-container">
-				<canvas id="srcCanvas"></canvas>
-				<img id="resultImage"></img>
+			<div id="canvas-container">
+				<canvas class="image" id="src-canvas"></canvas>
+				<img class="image" id="result-image"></img>
 			</div>
 			<div id="main-controls">
 				<div class="button" onclick="crush()">reKrush file</div>
-				<input type="file" style="display: none;" id="fileInput" onchange="loadFile(this.files[0])"/>
-				<div class="button" onclick="handleFileInput()">Upload file</div>
+				<input 
+					type="file"
+					style="display: none;"
+					id="file-input"
+					onchange="handleFileSelect(this.files[0])"
+				/>
+				<div class="button" onclick="openFileSelectDialog()">Upload file</div>
 			</div>
 
 			<div id="main-input-controls">
@@ -39,17 +50,38 @@
 					</div>
 					<div class="main-input-controls-group-item">
 						<label for="control_distort_interval_min">Min</label>
-						<input type="range" min="0" max="100" value="50" id="control_distort_interval_min" onchange="updateControlLabel(this)"/>
+						<input 
+							type="range" 
+							min="0" 
+							max="100" 
+							value="50" 
+							id="control_distort_interval_min" 
+							onchange="updateControlLabel(this)"
+						/>
 						<span id="control_distort_interval_min_value">50</span>
 					</div>
 					<div class="main-input-controls-group-item">
 						<label for="control_distort_interval_max">Max</label>
-						<input type="range" min="0" max="100" value="80" id="control_distort_interval_max" onchange="updateControlLabel(this)"/>
+						<input 
+							type="range" 
+							min="0" 
+							max="100" 
+							value="80" 
+							id="control_distort_interval_max" 
+							onchange="updateControlLabel(this)"
+						/>
 						<span id="control_distort_interval_max_value">80</span>
 					</div>
 					<div class="main-input-controls-group-item">
 						<label for="control_distort_threshold">Threshold</label>
-						<input type="range" min="0" max="5" value="1" id="control_distort_threshold" onchange="updateControlLabel(this)"/>
+						<input 
+							type="range" 
+							min="0" 
+							max="5" 
+							value="1" 
+							id="control_distort_threshold" 
+							onchange="updateControlLabel(this)"
+						/>
 						<span id="control_distort_threshold_value">1</span>
 					</div>
 				</div>
@@ -58,13 +90,27 @@
 						Slicer
 					</div>
 					<div class="main-input-controls-group-item">
-						<label for="control_4">Seg length</label>
-						<input type="range" min="0" max="100" value="75" id="control_4" onchange="updateControlLabel(this)"/>
+						<label for="control_slicer_seg_length">Seg length</label>
+						<input 
+							type="range"
+							min="0"
+							max="100"
+							value="75"
+							id="control_slicer_seg_length"
+							onchange="updateControlLabel(this)"
+						/>
 						<span id="control_4_value">75</span>
 					</div>
 					<div class="main-input-controls-group-item">
 						<label for="control_slicer_iterations">Iterations</label>
-						<input type="range" min="0" max="4" value="1" id="control_slicer_iterations" onchange="updateControlLabel(this)"/>
+						<input 
+							type="range"
+							min="0"
+							max="4"
+							value="1"
+							id="control_slicer_iterations"
+							onchange="updateControlLabel(this)"
+						/>
 						<span id="control_slicer_iterations_value">1</span>
 					</div>
 				</div>
@@ -74,12 +120,26 @@
 					</div>
 					<div class="main-input-controls-group-item">
 						<label for="control_delay_alpha">Alpha</label>
-						<input type="range" min="0" max="50" value="15" id="control_delay_alpha" onchange="updateControlLabel(this)"/>
+						<input 
+							type="range"
+							min="0"
+							max="50"
+							value="15"
+							id="control_delay_alpha"
+							onchange="updateControlLabel(this)"
+						/>
 						<span id="control_delay_alpha_value">15</span>
 					</div>
 					<div class="main-input-controls-group-item">
 						<label for="control_delay_segLength">Seg length</label>
-						<input type="range" min="0" max="50" value="25" id="control_delay_segLength" onchange="updateControlLabel(this)"/>
+						<input 
+							type="range"
+							min="0"
+							max="50"
+							value="25"
+							id="control_delay_segLength"
+							onchange="updateControlLabel(this)"
+						/>
 						<span id="control_delay_segLength_value">25</span>
 					</div>
 				</div>
@@ -89,16 +149,33 @@
 					</div>
 					<div class="main-input-controls-group-item">
 						<label for="control_6">Enabled</label>
-						<input type="checkbox" checked id="control_bitcrush"/>
+						<input 
+							type="checkbox"
+							checked id="control_bitcrush"
+						/>
 					</div>
 					<div class="main-input-controls-group-item">
 						<label for="control_bitcrush_threshold">Threshold</label>
-						<input type="range" min="0" max="10" value="5" id="control_bitcrush_threshold" onchange="updateControlLabel(this)"/>
+						<input 
+							type="range"
+							min="0"
+							max="10"
+							value="5"
+							id="control_bitcrush_threshold"
+							onchange="updateControlLabel(this)"
+						/>
 						<span id="control_bitcrush_threshold_value">5</span>
 					</div>
 					<div class="main-input-controls-group-item">
 						<label for="control_bitcrush_interval">Interval</label>
-						<input type="range" min="0" max="100" value="50" id="control_bitcrush_interval" onchange="updateControlLabel(this)"/>
+						<input 
+							type="range"
+							min="0"
+							max="100"
+							value="50"
+							id="control_bitcrush_interval"
+							onchange="updateControlLabel(this)"
+						/>
 						<span id="control_bitcrush_interval_value">50</span>
 					</div>
 				</div>
