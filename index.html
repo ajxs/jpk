@@ -6,7 +6,7 @@
 		<link rel="stylesheet" type="text/css" href="inc/main.css"/>
 		<title>ajxs / jpk(v2)</title>
 	</head>
-	<body onload="main_init()">
+	<body onload="handlePageLoad()">
 		<div id="main">
 			<header>
 				<a href="https://github.com/ajxs">ajxs</a> / <a href="https://github.com/ajxs/jpk">jpk(v2)</a>
@@ -32,8 +32,11 @@
 				<canvas class="image" id="src-canvas"></canvas>
 				<img class="image" id="result-image"></img>
 			</div>
+
+			<div id="error-message"></div>
+
 			<div id="main-controls">
-				<div class="button" onclick="crush()">reKrush file</div>
+				<div class="button" onclick="krush()">reKrush file</div>
 				<input 
 					type="file"
 					style="display: none;"
@@ -90,6 +93,14 @@
 						Slicer
 					</div>
 					<div class="main-input-controls-group-item">
+						<label for="control_slicer_enabled">Enabled</label>
+						<input 
+							type="checkbox"
+							checked
+							id="control_slicer_enabled"
+						/>
+					</div>
+					<div class="main-input-controls-group-item">
 						<label for="control_slicer_seg_length">Seg length</label>
 						<input 
 							type="range"
@@ -105,7 +116,7 @@
 						<label for="control_slicer_iterations">Iterations</label>
 						<input 
 							type="range"
-							min="0"
+							min="1"
 							max="4"
 							value="1"
 							id="control_slicer_iterations"
@@ -117,6 +128,14 @@
 				<div class="main-input-controls-group">
 					<div class="group-heading">
 						Delay
+					</div>
+					<div class="main-input-controls-group-item">
+						<label for="control_delay_enabled">Enabled</label>
+						<input 
+							type="checkbox"
+							checked
+							id="control_delay_enabled"
+						/>
 					</div>
 					<div class="main-input-controls-group-item">
 						<label for="control_delay_alpha">Alpha</label>
@@ -148,10 +167,11 @@
 						Bitcrusher
 					</div>
 					<div class="main-input-controls-group-item">
-						<label for="control_6">Enabled</label>
+						<label for="control_bitcrush_enabled">Enabled</label>
 						<input 
 							type="checkbox"
-							checked id="control_bitcrush"
+							checked
+							id="control_bitcrush_enabled"
 						/>
 					</div>
 					<div class="main-input-controls-group-item">
@@ -183,13 +203,11 @@
 			<div class="section">
 				<div class="section-title">Sample Images</div>
 				<div id="sample-images">
-					<img id="img_5" onclick="loadFileFromImg(this)" src="img/5.png"/>
-					<img id="img_6" onclick="loadFileFromImg(this)" src="img/6.png"/>
-					<img id="img_4" onclick="loadFileFromImg(this)" src="img/4.png"/>
+					<img id="img_5" onclick="loadFileFromImgElement(this)" src="img/5.png"/>
+					<img id="img_6" onclick="loadFileFromImgElement(this)" src="img/6.png"/>
+					<img id="img_4" onclick="loadFileFromImgElement(this)" src="img/4.png"/>
 				</div>
 			</div>
 		</div>
 	</body>
-
-
 </html>

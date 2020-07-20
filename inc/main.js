@@ -13,19 +13,20 @@
 
 "use strict";
 
+/** The source canvas element. */
 let srcCanvas;
-let mainCanvas;
+/** The destination canvas element used to draw the final result to. */
+let destCanvas;
 
 /** Whether to print debug output to the browser console. */
 const DEBUG_OUTPUT = true;
 
 /**
- * Main
+ * Handles the main page load.
  */
-function main_init() {
+function handlePageLoad() {
 	srcCanvas = document.getElementById("src-canvas");
-	mainCanvas = document.createElement("canvas");
-
+	destCanvas = document.createElement("canvas");
 
 	loadFileFromImgElement(document.getElementById("img_5"));
 }
@@ -58,11 +59,11 @@ function handleFileSelect(file) {
 
 		srcCanvas.width = img.naturalWidth;
 		srcCanvas.height = img.naturalHeight;
-		mainCanvas.width = img.naturalWidth;
-		mainCanvas.height = img.naturalHeight;
+		destCanvas.width = img.naturalWidth;
+		destCanvas.height = img.naturalHeight;
 
 		srcContext.drawImage(img, 0, 0);
-		crush();
+		krush();
 	};
 
 	img.setAttribute("crossOrigin", "anonymous");
@@ -72,7 +73,7 @@ function handleFileSelect(file) {
 
 /**
  * Loads a file to be krushed from a HTML image element.
- * This begins the krush process.
+ * This initialises the krush process.
  * @param {ImgElement} img - The HTML image to load.
  */
 function loadFileFromImgElement(img)
@@ -82,16 +83,18 @@ function loadFileFromImgElement(img)
 
 	srcCanvas.width = img.naturalWidth;
 	srcCanvas.height = img.naturalHeight;
-	mainCanvas.width = img.naturalWidth;
-	mainCanvas.height = img.naturalHeight;
+	destCanvas.width = img.naturalWidth;
+	destCanvas.height = img.naturalHeight;
 
 	srcContext.drawImage(img, 0, 0);
-	crush();
+
+	krush();
 }
 
 
 /**
- *
+ * Gets all of the user-input control values.
+ * @returns An object containing all of the control values.
  */
 function getControlValues()
 {
@@ -102,15 +105,17 @@ function getControlValues()
 			threshold: document.getElementById("control_distort_threshold").value
 		},
 		slicer: {
+			enabled: document.getElementById("control_slicer_enabled").value,
 			segLength: document.getElementById("control_slicer_seg_length").value,
 			iterations: document.getElementById("control_slicer_iterations").value
 		},
 		bitcrush: {
-			enabled: document.getElementById("control_bitcrush").checked,
+			enabled: document.getElementById("control_bitcrush_enabled").checked,
 			threshold: document.getElementById("control_bitcrush_threshold").value,
 			interval: document.getElementById("control_bitcrush_interval").value
 		},
 		delay: {
+			enabled: document.getElementById("control_delay_enabled").checked,
 			alpha: document.getElementById("control_delay_alpha").value,
 			segLength: document.getElementById("control_delay_segLength").value
 		}
@@ -118,22 +123,50 @@ function getControlValues()
 }
 
 
+/**
+ * Updates the 'value' for a particular control element.
+ * This is triggered by the `onChange` event of an `input` element.
+ * @param {HTMLElement} node - The triggering HTML element.
+ */
 function updateControlLabel(node)
 {
 	document.getElementById(`${node.id}_value`).innerHTML = node.value;
 }
 
 
-function distort(_byteArray,
-	_headerLength,
-	_threshold,
-	_intervalMin,
-	_intervalMax)
+/**
+ * @returns The computed interval value.
+ */
+function createRandomInterval(intervalMin,
+	intervalScale)
+{
+	return intervalScale * (Math.random() + intervalMin) | 0;
+}
+
+
+/**
+ * Image distortion function.
+ * This image functions by randomly swapping bits within the image's binary data.
+ * @param {Uint8ClampedArray} sourceImageData - The source image binary data.
+ * @param {Number} jpegHeaderLength - The offset into the binary data of the first pixel data.
+ * @param {Number} threshold - This value contols how likely each individual selected bit is
+ * to be distorted by the process. This corresponds to a percentage chance for each byte
+ * swap to occur.
+ * @param {Number} intervalMin - The minimal offset between each byte to be swapped.
+ * @param {Number} intervalScale - The scale of the offset distance between each swapped byte.
+ * A smaller value will create more 'distortion'.
+ * @returns A Uint8ClampedArray containing the distorted image data.
+ */
+function distort(sourceImageData,
+	jpegHeaderLength,
+	threshold,
+	intervalMin,
+	intervalScale)
 {
 	/** The image data to distort. */
-	const imageData = Uint8Array.from(_byteArray);
+	const imageData = Uint8ClampedArray.from(sourceImageData);
 	/** The offset into the image data to distort. */
-	let idx = _headerLength || 0;
+	let idx = jpegHeaderLength || 0;
 	/** The number of distortions, for debugging. */
 	let nDistortions = 0;
 	/** The number of distortion passes, for debugging. */
@@ -142,12 +175,12 @@ function distort(_byteArray,
 	while(idx < imageData.length) {
 		nDistortionPasses++;
 
-		if(Math.random() < (_threshold / 10)) {
+		if(Math.random() < (threshold / 10)) {
 			imageData[idx] = (Math.random() * 255) | 0;
 			nDistortions++;
 		}
 
-		idx += _intervalMin + (Math.random() * _intervalMax) | 0;
+		idx += intervalMin + (Math.random() * intervalScale) | 0;
 	}
 
 	if(DEBUG_OUTPUT) {
@@ -160,25 +193,30 @@ function distort(_byteArray,
 
 
 /**
- *
- * @param {*} _byteArray
- * @param {*} _iterations
- * @param {*} _segLengthModifier
+ * This function swaps two random 'slices' of the image. The process is repeated as per
+ * the specified number of iterations.
+ * @param {Uint8ClampedArray} sourceImageData - The source image binary data.
+ * @param {Number} jpegHeaderLength - The offset into the binary data of the first pixel data.
+ * @param {Number} slicerIterations - The number of iterations for the process.
+ * @param {Number} segmentLengthScale - This value controls the scale of each sliced segment.
+ * A shorter value here will create more distortion.
+ * @returns A Uint8ClampedArray containing the distorted image data.
  */
-function slicer(_byteArray,
-	_iterations,
-	_segLengthModifier)
+function slicer(sourceImageData,
+	jpegHeaderLength,
+	slicerIterations,
+	segmentLengthScale)
 {
 	/** The image data to distort. */
-	const imageData = Uint8Array.from(_byteArray);
+	const imageData = Uint8ClampedArray.from(sourceImageData);
 
-	for(let c = 0; c < _iterations | 0; c++) {
+	for(let c = 0; c < slicerIterations | 0; c++) {
 		/** The offset for the slice source. */
 		let sliceSource = imageData.length;
 		/** The offset for the slice target. */
 		let sliceTarget = imageData.length;
 		/** The length of each slice. */
-		let sliceLength = ((Math.random() * 50) * _segLengthModifier) | 0;
+		let sliceLength = ((Math.random() * 50) * segmentLengthScale) | 0;
 		/** The source data for the slice. */
 		let sourceData = null;
 		/** The target data for the slice. */
@@ -186,11 +224,11 @@ function slicer(_byteArray,
 
 		while((sliceSource + sliceLength) > imageData.length) {
 			// get random position without going out of bounds.
-			sliceSource = (Math.random() * imageData.length) | 0;
+			sliceSource = jpegHeaderLength + (Math.random() * imageData.length) | 0;
 		}
 
 		while((sliceTarget + sliceLength) > imageData.length) {
-			sliceTarget = (Math.random() * imageData.length) | 0;
+			sliceTarget = jpegHeaderLength + (Math.random() * imageData.length) | 0;
 		}
 
 		if(DEBUG_OUTPUT) {
@@ -213,43 +251,37 @@ function slicer(_byteArray,
 
 
 /**
- *
- * @param {*} _byteArray
- * @param {*} _headerLength
- * @param {*} _threshold
- * @param {*} _interval
+ * A more aggressive image distortion.
+ * @param {Uint8ClampedArray} sourceImageData - The source image binary data.
+ * @param {Number} jpegHeaderLength - The offset into the binary data of the first pixel data.
+ * @param {Number} threshold - This value contols how likely each individual selected bit is
+ * to be distorted by the process. This corresponds to a percentage chance for each byte
+ * swap to occur.
+ * @param {Number} intervalScale - The scale of the offset distance between each swapped byte.
+ * A smaller value will create more 'distortion'.
+ * @returns A Uint8ClampedArray containing the distorted image data.
  */
-function bitcrush(_byteArray,
-	_headerLength,
-	_threshold,
-	_interval)
+function bitcrush(sourceImageData,
+	jpegHeaderLength,
+	threshold,
+	intervalScale)
 {
 	/** Counter for the number of distortion passes. */
 	let nDistortionPasses = 0;
 
-	/**
-	 * @returns The computed interval value.
-	 */
-	function getInterval() {
-		/** The interval minimum. */
-		const intervalMin = 20;
-
-		return _interval * (Math.random() + intervalMin) | 0;
-	}
-
 	/** The image data to distort. */
-	const imageData = Uint8Array.from(_byteArray);
+	const imageData = Uint8ClampedArray.from(sourceImageData);
 
 	/** The iterator for which byte to crush. */
-	let i = _headerLength + getInterval();
+	let i = jpegHeaderLength + createRandomInterval(20, intervalScale);
 	do {
-		if (Math.random() < (_threshold / 100)) {
+		if (Math.random() < (threshold / 100)) {
 			imageData[i] = (Math.random() * 255) | 0;
 			nDistortionPasses++;
 		}
 
-		i += getInterval();
-	} while(i < _byteArray.length);
+		i += createRandomInterval(20, intervalScale);
+	} while(i < sourceImageData.length);
 
 	if(DEBUG_OUTPUT) {
 		console.log(`Bitcrush: Distortion passes: ${nDistortionPasses}`);
@@ -260,26 +292,28 @@ function bitcrush(_byteArray,
 
 
 /**
- *
- * @param {*} _byteArray
- * @param {*} _segLength
- * @param {*} _alpha
+ * @param {Uint8ClampedArray} sourceImageData - The source image binary data.
+ * @param {Number} jpegHeaderLength - The offset into the binary data of the first pixel data.
+ * @param {Number} delaySliceLength
+ * @param {Number} delayAlpha
+ * @returns A Uint8ClampedArray containing the distorted image data.
  */
-function delay(_byteArray,
-	_segLength,
-	_alpha)
+function delay(sourceImageData,
+	jpegHeaderLength,
+	delaySliceLength,
+	delayAlpha)
 {
 	/** The sliced image data */
-	const slicedImageData = slicer(_byteArray, 1, _segLength);
+	const slicedImageData = slicer(sourceImageData, jpegHeaderLength, 1, delaySliceLength);
 	/** The HTML image element to hold the image data. */
 	let img = new Image();
 
 	img.onload = function () {
 		/** Canvas 2d drawing context */
-		const mainContext = mainCanvas.getContext("2d");
+		const mainContext = destCanvas.getContext("2d");
 
 		mainContext.globalCompositeOperation = "source-over";
-		mainContext.globalAlpha = (_alpha / 200);
+		mainContext.globalAlpha = (delayAlpha / 200);
 		mainContext.drawImage(img, 0, 0);
 	};
 
@@ -288,16 +322,41 @@ function delay(_byteArray,
 }
 
 
-function crush()
+/**
+ * Initialises the image krushing process.
+ * This function prepares the binary data and then calls `krushBinaryData`.
+ */
+function krush()
+{
+	srcCanvas.toBlob((blob) => {
+		blob.arrayBuffer().then((arrayBuffer) => {
+			krushBinaryData(arrayBuffer);
+		}).catch((err) => {
+			if(DEBUG_OUTPUT) {
+				console.error(err);
+			}
+
+			const errorElement = document.getElementById("error-element");
+			errorElement.innerText = "An error was encountered during the rendering process";
+		});
+	}, "image/jpeg", 1.0);
+}
+
+
+/**
+ * Initialises the image krushing process.
+ * @param {ArrayBuffer} binaryImageData - The binary image data.
+ */
+function krushBinaryData(binaryImageData)
 {
 	/** The user-input control values. */
 	const control = getControlValues();
 	/** The binary image data. */
-	let imageData = base64toBinary(srcCanvas.toDataURL("image/jpeg", 1.0));
+	let imageData = new Uint8ClampedArray(binaryImageData);
 	/** The JPEG header length. */
 	let jpegHeaderLength = getJpegHeaderLength(imageData);
 	/** Canvas 2d drawing context */
-	const mainContext = mainCanvas.getContext("2d");
+	const mainContext = destCanvas.getContext("2d");
 	/** The image element to store the result in. */
 	const resultImage = document.getElementById("result-image");
 
@@ -307,8 +366,9 @@ function crush()
 	imageData = distort(imageData, jpegHeaderLength, control.distort.threshold,
 		control.distort.intervalMin, control.distort.intervalMax);
 
-	if(control.slicer.iterations > 0) {
-		imageData = slicer(imageData, control.slicer.iterations, control.slicer.segLength);
+	if(control.slicer.enabled) {
+		imageData = slicer(imageData, jpegHeaderLength, control.slicer.iterations,
+			control.slicer.segLength);
 	}
 
 	if(control.bitcrush.enabled) {
@@ -319,11 +379,16 @@ function crush()
 	/** The HTML image element to hold the crushed image data. */
 	let img = new Image();
 
+	// Render the processed image to the destination canvas.
 	img.onload = function () {
-		mainContext.drawImage(img, 0, 0);
-		delay(imageData, control.delay.segLength, control.delay.alpha);
+		resultImage.onload = () => {
+			if(control.delay.enabled) {
+				delay(imageData, jpegHeaderLength, control.delay.segLength, control.delay.alpha);
+			}
+		};
 
-		resultImage.src = mainCanvas.toDataURL("image/png", 1);
+		mainContext.drawImage(img, 0, 0);
+		resultImage.src = destCanvas.toDataURL("image/png", 1);
 	}
 
 	// Get image data as DataURL.
@@ -333,17 +398,18 @@ function crush()
 
 /**
  * Finds the JPEG header length.
- * @param {ByteArray} _byteArray
+ * This is used to avoid clobbering the JPEG header.
+ * @param {ByteArray} sourceImageData
  * @returns The JPEG header length, or 0 if it cannot be found.
  */
-function getJpegHeaderLength(_byteArray)
+function getJpegHeaderLength(sourceImageData)
 {
 	/** The index in the JPEG file to check. */
 	let idx = 0;
 
-	while(idx < _byteArray.length) {
+	while(idx < sourceImageData.length) {
 		// Checks for the JPEG end of header bytes.
-		if(_byteArray[idx] == 255 && _byteArray[idx + 1] == 218) {
+		if(sourceImageData[idx] == 255 && sourceImageData[idx + 1] == 218) {
 			if(DEBUG_OUTPUT) {
 				console.log(`JPEG header length: ${idx}`);
 			}
@@ -363,8 +429,9 @@ function getJpegHeaderLength(_byteArray)
 
 
 /**
- * encode binary to ascii
- * @param {ByteArray} sourceData
+ * Encodes binary data into a DataURL object, which can be used as an image's `src` attribute.
+ * @param {ByteArray} sourceData - The source binary data.
+ * @returns A base64 encoded image in string format.
  */
 function createDataUrlFromBinaryData(sourceData)
 {
@@ -374,20 +441,4 @@ function createDataUrlFromBinaryData(sourceData)
 	const imageData = window.btoa(base64String);
 
 	return "data:image/jpeg;base64," + imageData;
-}
-
-
-/**
- *
- * @param {} dataURI
- * @returns A Uint8 array containing the image data.
- */
-function base64toBinary(dataURI) {
-	/** The binary string stripped of its base64 encoding marker. */
-	const base64String = window.atob(dataURI.substring(dataURI.indexOf(";base64,") + 8));
-	/** The base64 string converted to a string of bytes. */
-	const binaryString = Array.prototype.map.call(base64String, (x) => x.charCodeAt(0));
-
-	// Convert the binary string to a Uint8 clamped array.
-	return Uint8ClampedArray.from(binaryString);
 }

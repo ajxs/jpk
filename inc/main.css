@@ -1,5 +1,8 @@
 body {
 	background-color: rgb(250,250,250);
+	font-family: 'arial', sans-serif;
+	font-size: 14px;
+	letter-spacing: normal;
 }
 
 #main {
@@ -39,6 +42,10 @@ body {
 	max-height: 400px;
 }
 
+#main #error-message {
+	color: rgb(255, 25, 25);
+}
+
 #about-text {
 	max-width: 80%;
 }
@@ -51,9 +58,6 @@ body {
 .section {
 	margin-top: 20px;
 	background-color: rgb(230,230,230);
-	font-family: 'arial', sans-serif;
-	font-size: 14px;
-	letter-spacing: normal;
 	padding: 6px;
 }
 
